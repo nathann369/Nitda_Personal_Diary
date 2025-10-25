@@ -40,14 +40,11 @@ class Diary:
             raise DiaryLockedError(f"Entry '{title}' is locked and cannot be deleted.")
         self.entries.remove(entry)
 
-    def search(self, keyword=None, start_date=None, end_date=None):
+    def search(self, keyword=None):
         results = self.entries
         if keyword:
             results = [e for e in results if keyword.lower() in e.title.lower() or keyword.lower() in e.content.lower()]
-        if start_date:
-            results = [e for e in results if e.date >= start_date.strftime("%Y-%m-%d")]
-        if end_date:
-            results = [e for e in results if e.date <= end_date.strftime("%Y-%m-%d")]
+        
         return results
 
     def _find_entry(self, title):
