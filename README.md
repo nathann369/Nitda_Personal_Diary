@@ -6,6 +6,8 @@ clone repo ( git clone https://github.com/nathann369/Nitda_Personal_Diary.git )
 
 # Dependencies
 python -m tkinter
-pip install tkcalendar
+
+pip install customtkinter reportlab tkcalendar
+
 
 python main.py

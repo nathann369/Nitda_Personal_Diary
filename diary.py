@@ -4,7 +4,9 @@
 # -----------------------------------------
 
 from datetime import datetime
+from tkinter import messagebox
 from errors import DiaryLockedError, EntryNotFoundError
+from pdf_exporter import export_entry_to_pdf
 
 
 class Entry:
@@ -40,7 +42,25 @@ class Diary:
             raise DiaryLockedError(f"Entry '{title}' is locked and cannot be deleted.")
         self.entries.remove(entry)
 
-    def search(self, keyword=None):
+    def download_pdf(self):
+        """Download the selected diary entry as a PDF."""
+        try:
+            index = self.listbox.curselection()[0]
+            entry = self.diary.entries[index]
+
+            if entry.locked:
+                messagebox.showwarning("Locked", "You cannot download a locked entry.")
+                return
+
+            file_name = export_entry_to_pdf(entry)
+            messagebox.showinfo("Success", f"Entry exported as '{file_name}' successfully!")
+
+        except IndexError:
+            messagebox.showwarning("Error", "Please select an entry to export.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export: {e}")
+
+    def search(self, keyword=None, start_date=None, end_date=None):
         results = self.entries
         if keyword:
             results = [e for e in results if keyword.lower() in e.title.lower() or keyword.lower() in e.content.lower()]
@@ -52,3 +72,6 @@ class Diary:
             if e.title == title:
                 return e
         raise EntryNotFoundError(f"Entry '{title}' not found.")
+    
+
+    
