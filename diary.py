@@ -1,6 +1,6 @@
 # diary.py
 # -----------------------------------------
-# Core business logic of the Diary
+# Handles core diary logic and entry model
 # -----------------------------------------
 
 from datetime import datetime
@@ -8,57 +8,50 @@ from errors import DiaryLockedError, EntryNotFoundError
 
 
 class Entry:
-    """Represents a single diary entry."""
-    def __init__(self, title, content, date=None):
+    def __init__(self, title, content, date=None, locked=False):
         self.title = title
         self.content = content
         self.date = date or datetime.now().strftime("%Y-%m-%d")
-
-    def __repr__(self):
-        return f"<Entry: {self.title} ({self.date})>"
-
-
-class Diary:
-    """Manages diary entries and lock state."""
-    def __init__(self):
-        self.entries = []
-        self.locked = False
-        self.password_hash = None  # set via utils.hash_password()
-
-    def add_entry(self, entry: Entry):
-        if self.locked:
-            raise DiaryLockedError("Diary is locked! Unlock to add entries.")
-        self.entries.append(entry)
-
-    def edit_entry(self, title, new_content):
-        if self.locked:
-            raise DiaryLockedError("Diary is locked! Unlock to edit entries.")
-        for e in self.entries:
-            if e.title == title:
-                e.content = new_content
-                return
-        raise EntryNotFoundError(f"Entry '{title}' not found.")
-
-    def delete_entry(self, title):
-        if self.locked:
-            raise DiaryLockedError("Diary is locked! Unlock to delete entries.")
-        for e in self.entries:
-            if e.title == title:
-                self.entries.remove(e)
-                return
-        raise EntryNotFoundError(f"Entry '{title}' not found.")
-
-    def search(self, keyword):
-        """Search entries by keyword in title or content."""
-        return [e for e in self.entries if keyword.lower() in e["content"].lower() or keyword.lower() in e["title"].lower()]
- 
+        self.locked = locked  # Each entry can be locked individually
 
     def lock(self):
         self.locked = True
 
-    def unlock(self, password, verify_func):
-        """Unlock diary if password is correct."""
-        if verify_func(password):
-            self.locked = False
-            return True
-        return False
+    def unlock(self):
+        self.locked = False
+
+
+class Diary:
+    def __init__(self):
+        self.entries = []
+
+    def add_entry(self, entry):
+        self.entries.append(entry)
+
+    def edit_entry(self, title, new_content):
+        entry = self._find_entry(title)
+        if entry.locked:
+            raise DiaryLockedError(f"Entry '{title}' is locked and cannot be edited.")
+        entry.content = new_content
+
+    def delete_entry(self, title):
+        entry = self._find_entry(title)
+        if entry.locked:
+            raise DiaryLockedError(f"Entry '{title}' is locked and cannot be deleted.")
+        self.entries.remove(entry)
+
+    def search(self, keyword=None, start_date=None, end_date=None):
+        results = self.entries
+        if keyword:
+            results = [e for e in results if keyword.lower() in e.title.lower() or keyword.lower() in e.content.lower()]
+        if start_date:
+            results = [e for e in results if e.date >= start_date.strftime("%Y-%m-%d")]
+        if end_date:
+            results = [e for e in results if e.date <= end_date.strftime("%Y-%m-%d")]
+        return results
+
+    def _find_entry(self, title):
+        for e in self.entries:
+            if e.title == title:
+                return e
+        raise EntryNotFoundError(f"Entry '{title}' not found.")
