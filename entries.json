@@ -2,11 +2,13 @@
     {
         "title": "life",
         "content": "asasd asdas dsfs  ssdsdf iughuih",
-        "date": "2025-10-25"
+        "date": "2025-10-25",
+        "locked": false
     },
     {
         "title": "time",
-        "content": "every time",
-        "date": "2025-10-25"
+        "content": "every time njj",
+        "date": "2025-10-25",
+        "locked": false
     }
 ]
