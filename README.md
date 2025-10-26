@@ -8,6 +8,6 @@ clone repo ( git clone https://github.com/nathann369/Nitda_Personal_Diary.git )
 python -m tkinter
 
 pip install customtkinter reportlab tkcalendar
-
+pip install fpdf
 
 python main.py
