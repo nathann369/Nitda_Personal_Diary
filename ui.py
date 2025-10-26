@@ -4,8 +4,9 @@
 # -----------------------------------------
 from pdf_exporter import export_entry_to_pdf
 import tkinter as tk
-from tkinter import messagebox, simpledialog, scrolledtext
+from tkinter import messagebox, simpledialog, scrolledtext, filedialog
 from tkcalendar import Calendar
+from fpdf import FPDF
 from diary import Diary, Entry
 from storage import StorageManager
 from utils import parse_date, hash_password, verify_password
@@ -157,20 +158,28 @@ class DiaryApp:
             messagebox.showerror("Locked", "Cannot modify entries while diary is locked.")
 
     def download_pdf(self):
-        """Download the selected diary entry as a PDF."""
-        try:
-            index = self.listbox.curselection()[0]
-            entry = self.diary.entries[index]
-            if entry.locked:
-                messagebox.showwarning("Locked", "You cannot download a locked entry.")
-                return
+        """Download current entry as PDF locally."""
+        title = self.title_entry.get().strip()
+        content = self.content_text.get("1.0", "end").strip()
+        if not title or not content:
+            messagebox.showwarning("Warning", "No entry selected or content empty.")
+            return
 
-            file_name = export_entry_to_pdf(entry)
-            messagebox.showinfo("Success", f"Entry exported as '{file_name}' successfully!")
-        except IndexError:
-            messagebox.showwarning("Error", "Please select an entry to export.")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to export: {e}")
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")], title="Save PDF As"
+        )
+        if not file_path:
+            return
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(200, 10, txt=title, ln=True, align="C")
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, txt=content)
+        pdf.output(file_path)
+
+        messagebox.showinfo("Download", f"PDF saved to:\n{file_path}")
 
     def delete_entry(self):
         """Delete the selected entry."""
