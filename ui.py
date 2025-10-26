@@ -43,10 +43,30 @@ class DiaryApp:
         self.cal = Calendar(self.left, date_pattern="yyyy-mm-dd")
         self.cal.pack(pady=5)
        # Search Box
-        tk.Label(self.left, text="Search", bg="#333333", fg="white",font=("Arial", 12, "bold")).pack(pady=5)
-        self.search_box = tk.Entry(self.left, width=30,)
+        # Search Box 
+        tk.Label(self.left, text="Search", bg="#333333", fg="white", font=("Arial", 12, "bold")).pack(pady=5)
+
+        self.search_box = tk.Entry(self.left, width=30)
         self.search_box.pack(pady=5)
-        tk.Button(self.left, text="Search", command=self.search_entries, font=("Arial", 10, "bold")).pack(pady=5)
+
+        def search_entries():
+            """Search entries by keyword."""
+            keyword = self.search_box.get().strip()
+            if not keyword:
+                messagebox.showinfo("Results", "Please enter a keyword.")
+                return
+
+            # Call the Diary class's search() method from diary.py
+            results = self.diary.search(keyword)
+
+            if results:
+                text = "\n\n".join([f"{r['date']} - {r['title']}\n{r['content']}" for r in results])
+                messagebox.showinfo("Results", text)
+            else:
+                messagebox.showinfo("Results", "No entries found.")
+
+        tk.Button(self.left, text="Search", command=search_entries, font=("Arial", 10, "bold")).pack(pady=5)
+
 
         # Results List
         self.listbox = tk.Listbox(self.left, width=40, height=15)

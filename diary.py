@@ -60,14 +60,18 @@ class Diary:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to export: {e}")
 
-    def search(self, keyword=None, start_date=None, end_date=None):
-        results = self.entries
-        if keyword:
-            results = [e for e in results if keyword.lower() in e.title.lower() or keyword.lower() in e.content.lower()]
-        if start_date:
-            results = [e for e in results if e.date >= start_date.strftime("%Y-%m-%d")]
-        if end_date:
-            results = [e for e in results if e.date <= end_date.strftime("%Y-%m-%d")]
+    def search(self, keyword):
+        """Search entries by keyword in title or content (case-insensitive)."""
+        keyword = keyword.lower().strip()
+        results = []
+        for e in self.entries:
+        # Use attributes instead of dictionary keys
+            if keyword in e.title.lower() or keyword in e.content.lower():
+                results.append({
+                    "date": e.date,
+                    "title": e.title,
+                    "content": e.content
+                 })
         return results
 
     def _find_entry(self, title):
