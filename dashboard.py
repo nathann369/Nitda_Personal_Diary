@@ -303,10 +303,10 @@ class Dashboard(ctk.CTk):
 
     # ---------------- Logout ----------------
     def logout(self):
+        python = sys.executable
+        self.destroy()
         if messagebox.askyesno("Logout", "Bye bye! Logout now?"):
             # restart login.py as new process
-            python = sys.executable
-            self.destroy()
             os.execv(python, [python, "login.py"])
 
     # ---------------- Utils ----------------
