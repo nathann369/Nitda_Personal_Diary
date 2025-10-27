@@ -1,26 +1,26 @@
 [
-    {
-        "title": "life",
-        "content": "asasd asdas dsfs  ssdsdf iughuih",
-        "date": "2025-10-25",
-        "locked": false
-    },
-    {
-        "title": "time",
-        "content": "every time njj",
-        "date": "2025-10-25",
-        "locked": false
-    },
-    {
-        "title": "test",
-        "content": "testing dffdgf xdsdfsf",
-        "date": "2025-10-25",
-        "locked": false
-    },
-    {
-        "title": "usman",
-        "content": "this is a very good start",
-        "date": "2025-10-25",
-        "locked": false
-    }
+  {
+    "title": "Welcome",
+    "content": "This is a sample note. Use Add New to create entries.",
+    "date": "2025-10-26",
+    "locked": false
+  },
+  {
+    "title": "Hello",
+    "content": "How are you\nEdited",
+    "date": "2025-10-26",
+    "locked": false
+  },
+  {
+    "title": "Latest",
+    "content": "Note",
+    "date": "2025-10-27",
+    "locked": false
+  },
+  {
+    "title": "Hello",
+    "content": "Notes",
+    "date": "2025-10-27",
+    "locked": false
+  }
 ]
