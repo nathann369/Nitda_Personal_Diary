@@ -34,6 +34,7 @@ class DiaryApp:
 
         self.cal = Calendar(top, selectmode='day', date_pattern='yyyy-mm-dd')
         self.cal.pack(side=tk.LEFT, padx=8)
+        self.cal.bind("<<CalendarSelected>>", lambda e: self.view_by_date())
 
         search_frame = tk.Frame(top, bg='white')
         search_frame.pack(side=tk.LEFT, padx=12)
@@ -52,10 +53,74 @@ class DiaryApp:
         tk.Button(btns, text='Export PDF', width=14, command=self.export_pdf).pack(pady=3)
         tk.Button(btns, text='Show All', width=14, command=self.show_all).pack(pady=3)
 
-        self.listbox = tk.Listbox(root, width=110, height=22)
-        self.listbox.pack(pady=10)
+        # self.listbox = tk.Listbox(root, width=110, height=22)
+        # self.listbox.pack(pady=10)
+
+                # Create main frame (split view)
+        main_frame = tk.Frame(root, bg='white')
+        main_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        # Left: list of entries
+        left_frame = tk.Frame(main_frame, bg='white')
+        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+
+        self.listbox = tk.Listbox(left_frame, width=45, height=22)
+        self.listbox.pack(side=tk.LEFT, fill=tk.Y)
+        self.listbox.bind("<<ListboxSelect>>", self.show_or_hide_details)
+
+        scrollbar = tk.Scrollbar(left_frame, orient=tk.VERTICAL, command=self.listbox.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.listbox.config(yscrollcommand=scrollbar.set)
+
+        # Right: details view
+        self.details_frame = tk.Frame(main_frame, bg='#f8f8f8', relief=tk.SUNKEN, bd=1)
+        self.details_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10)
+
+        self.details_visible = False
+        self.current_detail_index = None
+
+        # Inside the details frame
+        self.details_title = tk.Label(self.details_frame, text='', font=('Arial', 14, 'bold'), bg='#f8f8f8', anchor='w', justify='left', wraplength=350)
+        self.details_title.pack(anchor='w', pady=(10, 5), padx=10)
+
+        self.details_content = tk.Text(self.details_frame, wrap='word', bg='#fdfdfd', width=60, height=22)
+        self.details_content.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+        self.details_content.config(state='disabled')
+
+        # Initially hide the details view
+        self.details_frame.pack_forget()
+
 
         self.refresh_list()
+
+
+    def show_or_hide_details(self, event):
+        try:
+            index = self.listbox.curselection()[0]
+        except IndexError:
+            return
+
+        # If the same entry is clicked again, hide the detail panel
+        if self.details_visible and self.current_detail_index == index:
+            self.details_frame.pack_forget()
+            self.details_visible = False
+            self.current_detail_index = None
+            return
+
+        entry = self.diary.entries[index]
+        self.current_detail_index = index
+        self.details_visible = True
+
+        # Update the detail panel
+        self.details_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10)
+        self.details_title.config(text=f"{entry.date} - {entry.title}")
+        self.details_content.config(state='normal')
+        self.details_content.delete('1.0', tk.END)
+        if entry.locked:
+            self.details_content.insert('1.0', '[Locked] Unlock to view content.')
+        else:
+            self.details_content.insert('1.0', entry.content)
+        self.details_content.config(state='disabled')
 
     def refresh_list(self, entries=None):
         self.listbox.delete(0, tk.END)
