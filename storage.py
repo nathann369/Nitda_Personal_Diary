@@ -34,3 +34,18 @@ def save_entries(username: str, entries):
     path = user_data_path(username)
     with open(path, "w", encoding="utf-8") as f:
         json.dump({"entries": entries}, f, indent=2)
+
+
+def search_entries(username: str, keyword: str = "", date: str = ""):
+    """Search user's diary entries by keyword and/or date."""
+    entries = load_entries(username)
+    keyword = keyword.lower().strip()
+    date = date.strip()
+
+    results = []
+    for entry in entries:
+        entry_text = entry.get("text", "").lower()
+        entry_date = entry.get("date", "")
+        if (not keyword or keyword in entry_text) and (not date or entry_date == date):
+            results.append(entry)
+    return results

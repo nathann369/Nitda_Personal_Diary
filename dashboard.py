@@ -9,6 +9,8 @@ from fpdf import FPDF
 from storage import load_entries, save_entries, ensure_user_file
 from utils import parse_date, encrypt_text, decrypt_text
 from auth import _load_users, verify_password  # verify_password is in auth.py
+from storage import search_entries, load_entries
+
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
@@ -42,6 +44,8 @@ class Dashboard(ctk.CTk):
         # Left: calendar + buttons
         self.cal = Calendar(self.left_frame, selectmode="day", date_pattern="yyyy-mm-dd")
         self.cal.pack(pady=(10, 8))
+        self.cal.bind("<<CalendarSelected>>", self.on_date_selected)
+
 
         ctk.CTkButton(self.left_frame, text="Add Entry", command=self.open_add_popup).pack(fill="x", padx=10, pady=6)
         ctk.CTkButton(self.left_frame, text="Edit Entry", command=self.open_edit_popup).pack(fill="x", padx=10, pady=6)
@@ -56,10 +60,65 @@ class Dashboard(ctk.CTk):
 
         self.search_entry = ctk.CTkEntry(topbar, placeholder_text="Search keyword or YYYY-MM-DD", width=400)
         self.search_entry.pack(pady=6, side="left", padx=(120, 6))
+
         ctk.CTkButton(topbar, text="Search", command=self.search).pack(side="left", padx=6)
         ctk.CTkButton(topbar, text="Refresh", command=self.refresh_list, fg_color="blue").pack(side="left", padx=6)
-
         ctk.CTkButton(topbar, text="Logout", command=self.logout, fg_color="red").pack(side="right", padx=10)
+
+        # ---------------- Search ----------------
+        def search(self):
+            query = self.search_entry.get().strip()
+            if not query:
+                self.refresh_list()
+                return
+
+            results = []
+            if "to" in query:  # date range
+                parts = query.split("to")
+                try:
+                    s = parse_date(parts[0].strip())
+                    e = parse_date(parts[1].strip())
+                    for ent in self.entries:
+                        if s <= ent.get("date", "") <= e:
+                            results.append(ent)
+                except Exception:
+                    messagebox.showerror("Error", "Invalid date range. Use YYYY-MM-DD to YYYY-MM-DD")
+                    return
+            else:
+                # keyword search in title/content
+                for ent in self.entries:
+                    title = ent.get("title", "")
+                    content = ent.get("content", "")
+                    if isinstance(content, dict):
+                        if query.lower() in title.lower():
+                            results.append(ent)
+                    else:
+                        if query.lower() in title.lower() or query.lower() in content.lower():
+                            results.append(ent)
+
+            # clear the list_container and show results
+            for w in self.list_container.winfo_children():
+                w.destroy()
+
+            if not results:
+                lbl = ctk.CTkLabel(self.list_container, text="No entries found.")
+                lbl.pack(pady=10)
+                return
+
+            for i, ent in enumerate(results):
+                locked = ent.get("locked", False)
+                icon = "🔒 " if locked else ""
+                btn = ctk.CTkButton(
+                    self.list_container,
+                    text=f"{icon}{ent.get('title')} — {ent.get('date')}",
+                    anchor="w",
+                    command=lambda e=ent: self.show_search_entry(e)
+                )
+                btn.pack(fill="x", pady=4, padx=6)
+
+            self.clear_display()
+
+
 
         # Entries list (scrollable)
         self.list_container = ctk.CTkScrollableFrame(self.right_frame, height=300, corner_radius=8)
@@ -100,6 +159,10 @@ class Dashboard(ctk.CTk):
 
         # clear displayed content
         self.clear_display()
+    def on_date_selected(self, event=None):
+        """Triggered when a date is clicked in the calendar."""
+        selected_date = self.cal.get_date()  # e.g. '2025-10-28'
+        self.show_entries_for_date(selected_date)
 
     def select_entry(self, idx):
         self.selected_index = idx
@@ -275,6 +338,57 @@ class Dashboard(ctk.CTk):
             btn.pack(fill="x", pady=4, padx=6)
         # clear display area
         self.clear_display()
+
+    def show_entries_for_date(self, date_str):
+        """Show all entries for the selected date."""
+        # clear the right-side list first
+        for w in self.list_container.winfo_children():
+            w.destroy()
+
+        # Filter entries for this date
+        same_day_entries = [e for e in self.entries if e.get("date") == date_str]
+
+        if not same_day_entries:
+            lbl = ctk.CTkLabel(self.list_container, text=f"No entries for {date_str}.")
+            lbl.pack(pady=10)
+            self.clear_display()
+            return
+
+        # Populate results
+        for i, e in enumerate(same_day_entries):
+            locked = e.get("locked", False)
+            icon = "🔒 " if locked else ""
+            btn = ctk.CTkButton(
+                self.list_container,
+                text=f"{icon}{e.get('title')} — {e.get('date')}",
+                anchor="w",
+                command=lambda idx=i, entries=same_day_entries: self.select_entry_from_filtered(idx, entries)
+            )
+            btn.pack(fill="x", pady=4, padx=6)
+
+        # Clear the display area
+        self.clear_display()
+
+    def select_entry_from_filtered(self, idx, filtered_entries):
+        """Show the selected entry from filtered list (e.g., date search)."""
+        entry = filtered_entries[idx]
+        self.display_title.configure(text=entry.get("title", ""))
+        self.display_date.configure(text=entry.get("date", ""))
+        self.display_content.configure(state="normal")
+        self.display_content.delete("1.0", "end")
+
+        if entry.get("locked", False):
+            self.display_content.insert("1.0", "(Locked) Unlock to view content.")
+        else:
+            content = entry.get("content", "")
+            if isinstance(content, dict):
+                self.display_content.insert("1.0", "(Encrypted content)")
+            else:
+                self.display_content.insert("1.0", content)
+
+        self.display_content.configure(state="disabled")
+
+
 
     # ---------------- Export ----------------
     def export_selected(self):
