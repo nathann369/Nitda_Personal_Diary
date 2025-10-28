@@ -93,9 +93,9 @@ class Dashboard(ctk.CTk):
         for index, entry in enumerate(self.entries):
             # Brighter background colors
             if entry["locked"]:
-                bg_color = "#85293E"  # Brighter pink for locked
+                bg_color = "#995867"  # Brighter pink for locked
             else:
-                bg_color = "#2C5244"  # Brighter mint for unlocked
+                bg_color = "#61997F"  # Brighter mint for unlocked
 
             lock_icon = "🔒 " if entry["locked"] else ""
             button_text = f"{lock_icon}{entry['title']} — {entry['date']}"
@@ -108,7 +108,7 @@ class Dashboard(ctk.CTk):
                 text_color="#E6E1E1",  
                 hover_color="#536B61",  
                 anchor="w",
-                command=lambda i=index: self.display_entry(i)
+                command=lambda i=index: self.select_entry(i)
             )
             entry_button.pack(fill="x", padx=10, pady=4)
 
