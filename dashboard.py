@@ -21,6 +21,8 @@ def user_arg_or_exit():
     return sys.argv[1]
 
 
+
+
 class Dashboard(ctk.CTk):
     def __init__(self, username):
         super().__init__()
@@ -83,23 +85,33 @@ class Dashboard(ctk.CTk):
         save_entries(self.username, self.entries)
 
     # ---------------- UI actions ----------------
-    def refresh_list(self, _=None):
-        # clear list_container children
-        for w in self.list_container.winfo_children():
-            w.destroy()
+    def refresh_list(self):
+        """Refresh the displayed list of entries."""
+        for widget in self.list_container.winfo_children():
+            widget.destroy()
 
-        for i, e in enumerate(self.entries):
-            locked = e.get("locked", False)
-            title = e.get("title", "")
-            date = e.get("date", "")
-            icon = "🔒 " if locked else ""
-            text = f"{icon}{title} — {date}"
-            btn = ctk.CTkButton(self.list_container, text=text, anchor="w",
-                                command=lambda idx=i: self.select_entry(idx), fg_color=("#d0e8e2" if not locked else "#ffdede"))
-            btn.pack(fill="x", pady=4, padx=6)
+        for index, entry in enumerate(self.entries):
+            # Brighter background colors
+            if entry["locked"]:
+                bg_color = "#85293E"  # Brighter pink for locked
+            else:
+                bg_color = "#2C5244"  # Brighter mint for unlocked
 
-        # clear displayed content
-        self.clear_display()
+            lock_icon = "🔒 " if entry["locked"] else ""
+            button_text = f"{lock_icon}{entry['title']} — {entry['date']}"
+
+            entry_button = ctk.CTkButton(
+                self.list_container,
+                text=button_text,
+                corner_radius=4,
+                fg_color=bg_color,
+                text_color="#E6E1E1",  
+                hover_color="#536B61",  
+                anchor="w",
+                command=lambda i=index: self.display_entry(i)
+            )
+            entry_button.pack(fill="x", padx=10, pady=4)
+
 
     def select_entry(self, idx):
         self.selected_index = idx
