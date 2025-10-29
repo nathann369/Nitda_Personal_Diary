@@ -1,0 +1,19 @@
+{
+  "entries": [
+    {
+      "title": "Yester Night",
+      "content": "Yester Day",
+      "date": "2025-10-28",
+      "locked": false
+    },
+    {
+      "title": "Day",
+      "content": {
+        "salt": "LZEHbUrBLLoAP-i6kDVq7g==",
+        "token": "Z0FBQUFBQnBBR2lRWUF0alFJQ1hFZzB1VTc3VG92a1U5T002SjN5RHgyclBwS0l3Y1l3UXNPNWd1Y1dDaG1PU3B0NjhzLUs1UDAtUU9rY2RrRHpqOC1fdW5HZUZsbUp0TVE9PQ=="
+      },
+      "date": "2025-10-28",
+      "locked": true
+    }
+  ]
+}
