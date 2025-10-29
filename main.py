@@ -46,17 +46,6 @@ class LoginApp(ctk.CTk):
         self.signup_button = ctk.CTkButton(self.tab_signup, text="Sign Up", command=self.handle_signup)
         self.signup_button.pack(pady=10)
 
-        # # --- Light/Dark mode toggle ---
-        # self.switch_var = ctk.StringVar(value="light")
-        # self.mode_switch = ctk.CTkSwitch(
-        #     self.main_frame,
-        #     text="🌞 / 🌙 Mode",
-        #     variable=self.switch_var,
-        #     onvalue="dark",
-        #     offvalue="light",
-        #     command=self.toggle_mode
-        # )
-        # self.mode_switch.pack(pady=15)
 
     # --- Handlers ---
     def handle_login(self):
