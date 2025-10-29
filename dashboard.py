@@ -222,6 +222,8 @@ class Dashboard(ctk.CTk):
         popup.geometry("600x450")
         popup.after(100, lambda: popup.grab_set())
         popup.focus_force()
+        popup.grab_set()
+        # popup.focus_force()
 
         title_entry = ctk.CTkEntry(popup, placeholder_text="Title", width=520)
         title_entry.pack(pady=(12, 8))
